@@ -13,6 +13,7 @@ import GoogleMapReact from 'google-map-react';
 import Polyline from 'google-map-react';
 import "./Home.css"
 
+
 const AnyReactComponent = ({ text }: any) => <div>{text}</div>;
 
 const Home = (): ReactElement => {
@@ -20,6 +21,10 @@ const Home = (): ReactElement => {
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [position, setPosition] = useState<any>({ lat: 49.2727, lng: -123.1207 });
+    const [showAlert, setShowAlert] = useState<boolean>(false);
+    const [draggedPosition, setDraggedPosition] = useState<any>(position);
+
+
 
     useEffect(() => {
         console.log("Run when component loads...");
@@ -46,39 +51,41 @@ const Home = (): ReactElement => {
                 setPosition(pos);
             })
 
-            const flightPlanCoordinates = [
-                { lat: 37.772, lng: -122.214 },
-                { lat: 21.291, lng: -157.821 },
-                { lat: -18.142, lng: 178.431 },
-                { lat: -27.467, lng: 153.027 },
-              ];
-              const flightPath = new google.maps.Polyline({
-                path: flightPlanCoordinates,
-                geodesic: true,
-                strokeColor: "#8FD1FD",
-                strokeOpacity: 1.0,
-                strokeWeight: 2,
-                draggable: true,
-              });
+        const flightPlanCoordinates = [
+            { lat: 37.772, lng: -122.214 },
+            { lat: 21.291, lng: -157.821 },
+            { lat: -18.142, lng: 178.431 },
+            { lat: -27.467, lng: 153.027 },
+        ];
+        const flightPath = new google.maps.Polyline({
+            path: flightPlanCoordinates,
+            geodesic: true,
+            strokeColor: "#8FD1FD",
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
+            draggable: true,
+        });
 
-              flightPath.setMap(map);
-            
+        flightPath.setMap(map);
+
     }
 
 
-
+    function showAlertOnDrag(props: any) {
+        setShowAlert(true);
+        setDraggedPosition({lat: props.center.lat(), lng: props.center.lng()});
+    }
 
 
     return (
         <>
-            <Navbar bg="light" variant="light">
+            <Navbar id='Navbar' bg="light" variant="light">
                 <Navbar.Brand href="#home">
-                    <img src="logo.png" style={{ width: 40, marginTop: -7 }} />{' '}
-                    <FontAwesomeIcon icon={faParking} />
-                    arking Vancouver
+                    <img src="logo.png" width={32} />{' '}
+                    {/* <FontAwesomeIcon icon={faParking} />{' '} */}
+                    Vancouver
                 </Navbar.Brand>
             </Navbar>
-
             <Container fluid="md" className="uploader-container">
                 <Row>
                     <Col>
@@ -102,14 +109,21 @@ const Home = (): ReactElement => {
                 {/* Map goes here */}
             </Container>
 
+            { showAlert &&
+                <div className='AlertBox'>
+                    <Alert variant={'primary'}>{draggedPosition.lat} {draggedPosition.lng}</Alert>
+                </div>
+            }
+
             <div id='google-map'>
 
                 <GoogleMapReact
-                    bootstrapURLKeys={{ key: "AIzaSyDCR59rsWNTZHIDLpzaYV_dBZ0bivSzz9g" }}
+                    bootstrapURLKeys={{ key: "AIzaSyAo_Xg46o9KHuxQVu4yvukI_B9hbvJoqJI" }}
                     defaultCenter={defaultProps.center}
                     defaultZoom={defaultProps.zoom}
                     yesIWantToUseGoogleMapApiInternals
                     onGoogleApiLoaded={({ map, maps }) => apiIsLoaded(map, maps)}
+                    onDragEnd={(props: any) => showAlertOnDrag(props)}
                     center={position}
                 >
 
