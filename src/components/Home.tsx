@@ -1,6 +1,6 @@
 import { faParking, faRocket, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect, useState, useCallback } from "react";
 import { Alert, Button } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -9,10 +9,14 @@ import Row from 'react-bootstrap/Row';
 import CustomAlert from './CustomAlert';
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import React from 'react';
-import GoogleMapReact from 'google-map-react';
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import Polyline from 'google-map-react';
 import "./Home.css"
+import Papa from 'papaparse';
+import useSupercluster from "use-supercluster";
 
+
+const CENTER = { lat: 49.24794439862854, lng: -123.18412164460982 };
 
 const AnyReactComponent = ({ text }: any) => <div>{text}</div>;
 
@@ -25,9 +29,79 @@ const Home = (): ReactElement => {
     const [draggedPosition, setDraggedPosition] = useState<any>(position);
 
 
+    const mapRef = React.useRef<google.maps.Map | undefined>();
+    const [zoom, setZoom] = React.useState(13);
+    const [bounds, setBounds] = React.useState<
+        google.maps.LatLngBounds | undefined
+    >();
+
+    const [data, setData] = React.useState<any>([]);
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch('/parking-meters.csv');
+            const reader = response.body!.getReader();
+            const result = await reader.read();
+            const text = new TextDecoder().decode(result.value);
+            const parsedData = Papa.parse(text, { header: true, dynamicTyping: true });
+            setData(parsedData.data);
+            console.log(parsedData.data);
+        } catch (error) {
+            console.error('Error fetching CSV file:', error);
+        }
+    };
+
+
+
+    const parseGeom = (geomStr: string) => {
+        const geomJSON = JSON.parse(geomStr);
+        return geomJSON.coordinates;
+    }
+
+    const points = React.useMemo(() => {
+        return data.map((meter: any) => {
+            if (meter.Geom) {
+                return {
+                    type: "Feature",
+                    properties: {
+                        cluster: false,
+                        meterID: meter.METERID,
+                        meterhead: meter.METERHEAD
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: parseGeom(meter.Geom)
+                    }
+                }
+            } else {
+                return null;
+            }
+        }).filter((point: any) => {
+            return point!==null;
+        });
+
+    }, [data]);
+
+    const superclusterBounds: [number, number, number, number] = bounds
+        ? [
+            bounds.getSouthWest().lng(),
+            bounds.getSouthWest().lat(),
+            bounds.getNorthEast().lng(),
+            bounds.getNorthEast().lat()
+        ]
+        : [0, 0, 0, 0];
+
+    const { clusters } = useSupercluster({
+        points,
+        bounds: superclusterBounds,
+        zoom,
+        options: { maxZoom: 18 }
+    });
+
 
     useEffect(() => {
         console.log("Run when component loads...");
+        fetchData();
     }, []);
 
     const buttonClicked = async () => {
@@ -36,45 +110,25 @@ const Home = (): ReactElement => {
         setIsLoading(false);
     }
 
-    const defaultProps = {
-        center: {
-            lat: 49.24794439862854,
-            lng: -123.18412164460982
-        },
-        zoom: 14
-    };
+    const onLoad = useCallback((map: google.maps.Map) => {
+        mapRef.current = map;
+    }, []);
 
-    const apiIsLoaded = (map: any, maps: any) => {
-        navigator?.geolocation.getCurrentPosition(
-            ({ coords: { latitude: lat, longitude: lng } }) => {
-                const pos = { lat, lng };
-                setPosition(pos);
-            })
+    const onZoomChanged = useCallback(() => {
+        const map = mapRef.current;
+        if (map) {
+            // @ts-ignore
+            setZoom(map.getZoom());
+            setBounds(map.getBounds() || undefined);
+        }
+    }, []);
 
-        const flightPlanCoordinates = [
-            { lat: 37.772, lng: -122.214 },
-            { lat: 21.291, lng: -157.821 },
-            { lat: -18.142, lng: 178.431 },
-            { lat: -27.467, lng: 153.027 },
-        ];
-        const flightPath = new google.maps.Polyline({
-            path: flightPlanCoordinates,
-            geodesic: true,
-            strokeColor: "#8FD1FD",
-            strokeOpacity: 1.0,
-            strokeWeight: 2,
-            draggable: true,
-        });
-
-        flightPath.setMap(map);
-
-    }
-
-
-    function showAlertOnDrag(props: any) {
-        setShowAlert(true);
-        setDraggedPosition({lat: props.center.lat(), lng: props.center.lng()});
-    }
+    const onBoundsChanged = useCallback(() => {
+        const map = mapRef.current;
+        if (map) {
+            setBounds(map.getBounds() || undefined);
+        }
+    }, []);
 
 
     return (
@@ -109,15 +163,58 @@ const Home = (): ReactElement => {
                 {/* Map goes here */}
             </Container>
 
-            { showAlert &&
+            {showAlert &&
                 <div className='AlertBox'>
                     <Alert variant={'primary'}>{draggedPosition.lat} {draggedPosition.lng}</Alert>
                 </div>
             }
 
             <div id='google-map'>
+                <LoadScript googleMapsApiKey={"AIzaSyAo_Xg46o9KHuxQVu4yvukI_B9hbvJoqJI"}>
+                    <GoogleMap
+                        onLoad={onLoad}
+                        onBoundsChanged={onBoundsChanged}
+                        onZoomChanged={onZoomChanged}
+                        center={CENTER}
+                        zoom={zoom}
+                        options={{
+                            styles: [
+                                {
+                                    featureType: "poi.business",
+                                    stylers: [{ visibility: "off" }]
+                                }
+                            ]
+                        }}
+                        mapContainerStyle={{ width: "100%", height: "100%" }}
+                    >
+                        {clusters.map((cluster: any) => {
+                            const [longitude, latitude] = cluster.geometry.coordinates;
+                            const { properties } = cluster;
+                            if (properties.point_count) {
+                                const { point_count: pointCount } = properties;
+                                return (
+                                    <Marker
+                                        key={`cluster-${cluster.id}`}
+                                        position={{ lat: latitude, lng: longitude }}
+                                        label={{ text: `${pointCount}` }}
+                                    />
+                                );
+                            } else {
+                                console.log(cluster);
+                                return (
+                                    <Marker
+                                        key={`cluster-${cluster.properties.meterID}`}
+                                        position={{ lat: latitude, lng: longitude }}
+                                        label={{ text: `C` }}
+                                    />
+                                );
+                            }
+                        })}
+                    </GoogleMap>
 
-                <GoogleMapReact
+                </LoadScript>
+
+                {/* <GoogleMapReact
                     bootstrapURLKeys={{ key: "AIzaSyAo_Xg46o9KHuxQVu4yvukI_B9hbvJoqJI" }}
                     defaultCenter={defaultProps.center}
                     defaultZoom={defaultProps.zoom}
@@ -133,7 +230,7 @@ const Home = (): ReactElement => {
                         lng={30.337844}
                         text="My Marker"
                     />
-                </GoogleMapReact>
+                </GoogleMapReact> */}
             </div>
         </>
     );

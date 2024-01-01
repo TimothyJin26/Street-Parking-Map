@@ -1,6 +1,5 @@
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import React, { useCallback } from "react";
-import useSwr from "swr";
 import useSupercluster from "use-supercluster";
 
 const CENTER = { lat: -37.759857, lng: 145.128708 };
@@ -109,7 +108,7 @@ const Test: React.FC<{ apiKey: string }> = (props) => {
                     {clusters.map((cluster) => {
                         const [longitude, latitude] = cluster.geometry.coordinates;
                         const { properties } = cluster;
-                        if ("cluster" in properties) {
+                        if (properties.point_count) {
                             const { point_count: pointCount } = properties;
                             return (
                                 <Marker
