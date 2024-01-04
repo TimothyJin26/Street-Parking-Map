@@ -197,6 +197,9 @@ const Home = (): ReactElement => {
                                         key={`cluster-${cluster.id}`}
                                         position={{ lat: latitude, lng: longitude }}
                                         label={{ text: `${pointCount}` }}
+                                        icon={{
+                                            url: require('./../assets/svg/location-pin-solid.svg').default,
+                                        }}
                                     />
                                 );
                             } else {
@@ -206,6 +209,9 @@ const Home = (): ReactElement => {
                                         key={`cluster-${cluster.properties.meterID}`}
                                         position={{ lat: latitude, lng: longitude }}
                                         label={{ text: `C` }}
+                                        icon={{
+                                            url: require('./../assets/svg/location-pin-solid.svg').default,
+                                        }}
                                     />
                                 );
                             }
