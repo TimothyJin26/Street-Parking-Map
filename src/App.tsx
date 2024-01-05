@@ -6,10 +6,6 @@ import Home from './components/Home';
 import Test from './components/Test';
 
 function App() {
-    useEffect(() => {
-        document.title = "Website Template";
-    });
-
     return (
         <div className="App">
                 <Home></Home>

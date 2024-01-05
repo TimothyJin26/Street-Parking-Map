@@ -9,11 +9,12 @@ import Row from 'react-bootstrap/Row';
 import CustomAlert from './CustomAlert';
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import React from 'react';
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
 import Polyline from 'google-map-react';
 import "./Home.css"
 import Papa from 'papaparse';
 import useSupercluster from "use-supercluster";
+import path from 'path';
 
 
 const CENTER = { lat: 49.24794439862854, lng: -123.18412164460982 };
@@ -21,7 +22,6 @@ const CENTER = { lat: 49.24794439862854, lng: -123.18412164460982 };
 const AnyReactComponent = ({ text }: any) => <div>{text}</div>;
 
 const Home = (): ReactElement => {
-
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [position, setPosition] = useState<any>({ lat: 49.2727, lng: -123.1207 });
@@ -131,26 +131,24 @@ const Home = (): ReactElement => {
     }, []);
 
 
+
+    const [clickedMeter, setClickedMeter] = useState<string>("");
+
+    const showInfoWindow = (meterID: string) => {
+        setClickedMeter(meterID);
+      };
+
+
     return (
         <>
             <Navbar id='Navbar' bg="light" variant="light">
                 <Navbar.Brand href="#home">
                     <img src="logo.png" width={32} />{' '}
                     {/* <FontAwesomeIcon icon={faParking} />{' '} */}
-                    Vancouver
+                    <span>Vancouver</span>
                 </Navbar.Brand>
             </Navbar>
             <Container fluid="md" className="uploader-container">
-                <Row>
-                    <Col>
-                        <h3><FontAwesomeIcon className="mr-1" icon={faRocket} />{' '}lcome</h3>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Button onClick={() => buttonClicked()}>Click me</Button>
-                    </Col>
-                </Row>
                 <Row>
                     <Col>
                         {
@@ -190,29 +188,63 @@ const Home = (): ReactElement => {
                         {clusters.map((cluster: any) => {
                             const [longitude, latitude] = cluster.geometry.coordinates;
                             const { properties } = cluster;
+                            
                             if (properties.point_count) {
                                 const { point_count: pointCount } = properties;
                                 return (
                                     <Marker
-                                        key={`cluster-${cluster.id}`}
+                                        key={`cluster-${cluster.id }`}
                                         position={{ lat: latitude, lng: longitude }}
-                                        label={{ text: `${pointCount}` }}
+                                        label={{ text: `${pointCount}`, color: 'black', fontWeight: 'bold'}}
                                         icon={{
-                                            url: require('./../assets/svg/location-pin-solid.svg').default,
+                                            path: google.maps.SymbolPath.CIRCLE,
+                                            scale: 15,
+                                            fillColor: "#f2f2f7",
+                                            fillOpacity: 1.0,
+                                            strokeWeight: 3,
+                                            strokeOpacity: 1.0,
+                                            strokeColor:"#1f304f",
                                         }}
                                     />
                                 );
                             } else {
+                                
+
                                 console.log(cluster);
                                 return (
                                     <Marker
                                         key={`cluster-${cluster.properties.meterID}`}
                                         position={{ lat: latitude, lng: longitude }}
-                                        label={{ text: `C` }}
+                                        label={{ text: `C`, color: 'white'}}
                                         icon={{
                                             url: require('./../assets/svg/location-pin-solid.svg').default,
+                                            scaledSize: new google.maps.Size(25, 25)
                                         }}
-                                    />
+                                        onClick={()=> {setClickedMeter(cluster.properties.meterID)}}
+                                    >
+                                        {cluster.properties.meterID===clickedMeter && (
+                                            <InfoWindow onCloseClick={() => setClickedMeter("")} position={{ lat: latitude, lng: longitude }}>
+                                                <Container className="info-window-container">
+                                                    <Row className="info-window-rate-container">
+                                                        <Col xs={5}>
+                                                            <span className="info-window-rate">Meter ID</span>
+                                                        </Col>
+                                                        <Col xs={7}>
+                                                            <span className="info-window-value">$#### CAD</span>
+                                                        </Col> 
+                                                    </Row>
+                                                    <Row className="info-window-rate-container">
+                                                        <Col xs={5}>
+                                                            <span className="info-window-rate">Rate</span>
+                                                        </Col>
+                                                        <Col xs={7}>
+                                                            <span className="info-window-value">$#### CAD</span>
+                                                        </Col>
+                                                    </Row>
+                                                </Container>
+                                            </InfoWindow>
+                                        )}
+                                    </Marker>
                                 );
                             }
                         })}
@@ -220,23 +252,6 @@ const Home = (): ReactElement => {
 
                 </LoadScript>
 
-                {/* <GoogleMapReact
-                    bootstrapURLKeys={{ key: "AIzaSyAo_Xg46o9KHuxQVu4yvukI_B9hbvJoqJI" }}
-                    defaultCenter={defaultProps.center}
-                    defaultZoom={defaultProps.zoom}
-                    yesIWantToUseGoogleMapApiInternals
-                    onGoogleApiLoaded={({ map, maps }) => apiIsLoaded(map, maps)}
-                    onDragEnd={(props: any) => showAlertOnDrag(props)}
-                    center={position}
-                >
-
-
-                    <AnyReactComponent
-                        lat={59.955413}
-                        lng={30.337844}
-                        text="My Marker"
-                    />
-                </GoogleMapReact> */}
             </div>
         </>
     );

@@ -21,3 +21,24 @@
     left: 0;
     right: 0;
 }
+
+.info-window-container {
+    min-width: 200px;
+    text-align: left;
+}
+
+.info-window-rate-container {
+    border-bottom: 1px solid gray;
+    text-align: left;
+}
+
+.info-window-rate {
+    font-size: 12px;
+    color: darkblue;
+    font-weight: 300;
+}
+
+.info-window-value {
+    font-size: 12px;
+    color: black;
+}
