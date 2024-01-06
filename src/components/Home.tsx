@@ -59,13 +59,13 @@ const Home = (): ReactElement => {
     }
 
     const points = React.useMemo(() => {
-        return data.map((meter: any) => {
+        const meterList = data.map((meter: any) => {
             if (meter.Geom) {
                 return {
                     type: "Feature",
                     properties: {
                         cluster: false,
-                        meterID: meter.METERID,
+                        meterID: [meter.METERID],
                         meterhead: meter.METERHEAD
                     },
                     geometry: {
@@ -79,6 +79,19 @@ const Home = (): ReactElement => {
         }).filter((point: any) => {
             return point!==null;
         });
+
+        const meterMap = new Map();
+
+        for(let meter of meterList) {
+            if(meterMap.has(JSON.stringify(meter.geometry))) {
+                let exisitngMeter = meterMap.get(JSON.stringify(meter.geometry));
+                exisitngMeter.properties.meterID = exisitngMeter.properties.meterID + ' / ' + meter.properties.meterID;
+            } else {
+                meterMap.set(JSON.stringify(meter.geometry), meter);
+            }
+        }
+        
+        return [...meterMap.values()];
 
     }, [data]);
 
