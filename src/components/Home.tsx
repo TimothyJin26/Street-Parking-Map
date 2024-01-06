@@ -134,8 +134,18 @@ const Home = (): ReactElement => {
 
     const [clickedMeter, setClickedMeter] = useState<string>("");
 
-    const showInfoWindow = (meterID: string) => {
-        setClickedMeter(meterID);
+    const getIconUrl = (meterHead: string) => {
+        if (meterHead === 'Pay Station') {
+          return require('./../assets/svg/location-pin-solid-station.svg').default;
+        } else if (meterHead === 'Single' || meterHead === 'Twin' || meterHead === 'Twin Bay Single') {
+          return require('./../assets/svg/location-pin-solid-meter.svg').default;
+        } else if (meterHead.includes('Disability')) {
+            return require('./../assets/svg/location-pin-solid-disabled.svg').default;
+        } else if (meterHead === ('Single Motorbike')) {
+            return require('./../assets/svg/location-pin-solid-motorcycle.svg').default;
+        } else {
+          return require('./../assets/svg/square-parking-solid.svg').default;
+        }
       };
 
 
@@ -158,7 +168,6 @@ const Home = (): ReactElement => {
                         }
                     </Col>
                 </Row>
-                {/* Map goes here */}
             </Container>
 
             {showAlert &&
@@ -215,10 +224,10 @@ const Home = (): ReactElement => {
                                     <Marker
                                         key={`cluster-${cluster.properties.meterID}`}
                                         position={{ lat: latitude, lng: longitude }}
-                                        label={{ text: `C`, color: 'white'}}
+                                        // label={{ text: `C`, color: 'white'}}
                                         icon={{
-                                            url: require('./../assets/svg/location-pin-solid.svg').default,
-                                            scaledSize: new google.maps.Size(25, 25)
+                                            url: getIconUrl(cluster.properties.meterhead),
+                                            scaledSize: new google.maps.Size(30, 30)
                                         }}
                                         onClick={()=> {setClickedMeter(cluster.properties.meterID)}}
                                     >
@@ -230,7 +239,7 @@ const Home = (): ReactElement => {
                                                             <span className="info-window-rate">Meter ID</span>
                                                         </Col>
                                                         <Col xs={7}>
-                                                            <span className="info-window-value">$#### CAD</span>
+                                                            <span className="info-window-value">{cluster.properties.meterID}</span>
                                                         </Col> 
                                                     </Row>
                                                     <Row className="info-window-rate-container">
