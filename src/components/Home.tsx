@@ -15,6 +15,7 @@ import "./Home.css"
 import Papa from 'papaparse';
 import useSupercluster from "use-supercluster";
 import path from 'path';
+import { time } from 'console';
 
 
 const CENTER = { lat: 49.24794439862854, lng: -123.18412164460982 };
@@ -25,7 +26,6 @@ const Home = (): ReactElement => {
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [position, setPosition] = useState<any>({ lat: 49.2727, lng: -123.1207 });
-    const [showAlert, setShowAlert] = useState<boolean>(false);
     const [draggedPosition, setDraggedPosition] = useState<any>(position);
 
 
@@ -35,7 +35,7 @@ const Home = (): ReactElement => {
         google.maps.LatLngBounds | undefined
     >();
 
-    const [data, setData] = React.useState<any>([]);
+    const [data, setData] = React.useState<any>([]); // List of meters
 
     const fetchData = async () => {
         try {
@@ -66,7 +66,8 @@ const Home = (): ReactElement => {
                     properties: {
                         cluster: false,
                         meterID: [meter.METERID],
-                        meterhead: meter.METERHEAD
+                        meterhead: meter.METERHEAD,
+                        meter: meter,
                     },
                     geometry: {
                         type: "Point",
@@ -77,20 +78,20 @@ const Home = (): ReactElement => {
                 return null;
             }
         }).filter((point: any) => {
-            return point!==null;
+            return point !== null;
         });
 
         const meterMap = new Map();
 
-        for(let meter of meterList) {
-            if(meterMap.has(JSON.stringify(meter.geometry))) {
+        for (let meter of meterList) {
+            if (meterMap.has(JSON.stringify(meter.geometry))) {
                 let exisitngMeter = meterMap.get(JSON.stringify(meter.geometry));
-                exisitngMeter.properties.meterID = exisitngMeter.properties.meterID + ' / ' + meter.properties.meterID;
+                exisitngMeter.properties.meterID = exisitngMeter.properties.meterID + '/' + meter.properties.meterID;
             } else {
                 meterMap.set(JSON.stringify(meter.geometry), meter);
             }
         }
-        
+
         return [...meterMap.values()];
 
     }, [data]);
@@ -149,18 +150,67 @@ const Home = (): ReactElement => {
 
     const getIconUrl = (meterHead: string) => {
         if (meterHead === 'Pay Station') {
-          return require('./../assets/svg/location-pin-solid-station.svg').default;
+            return require('./../assets/svg/location-pin-solid-station.svg').default;
         } else if (meterHead === 'Single' || meterHead === 'Twin' || meterHead === 'Twin Bay Single') {
-          return require('./../assets/svg/location-pin-solid-meter.svg').default;
+            return require('./../assets/svg/location-pin-solid-meter.svg').default;
         } else if (meterHead.includes('Disability')) {
             return require('./../assets/svg/location-pin-solid-disabled.svg').default;
         } else if (meterHead === ('Single Motorbike')) {
             return require('./../assets/svg/location-pin-solid-motorcycle.svg').default;
         } else {
-          return require('./../assets/svg/square-parking-solid.svg').default;
+            return require('./../assets/svg/square-parking-solid.svg').default;
         }
-      };
+    };
 
+    const formatRates = (meter: any) => {
+        const today: Date = new Date();
+        const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
+        const currentHour: number = today.getHours();
+        if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 9 && currentHour < 18) {
+            return <div>{meter["R_MF_9A_6P"]}</div>
+        } else if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 18 && currentHour < 22) {
+            return <div>{meter["R_MF_6P_10"]}</div>
+        } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
+            return <div>{meter["R_SA_9A_6P"]}</div>
+        } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
+            return <div>{meter["R_SA_6P_10"]}</div>
+        } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
+            return <div>{meter["R_SU_9A_6P"]}</div>
+        } else if (dayOfWeek == 0 && currentHour >= 18 && currentHour < 22) {
+            return <div>{meter["R_SU_6P_10"]}</div>
+        } else {
+            return <div>Free</div>
+        }
+    }
+
+    const formatTimeLimit = (timeLimit: string) => {
+        if(timeLimit === 'No Time Limit') {
+            return "No Time Limit"
+        } else {
+            return timeLimit.replace(/\D/g, "");
+        }
+    }
+
+    const getTimeLimit = (meter: any) => {
+        const today: Date = new Date();
+        const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
+        const currentHour: number = today.getHours();
+        if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 9 && currentHour < 18) {
+            return <div>{formatTimeLimit(meter["T_MF_9A_6P"])}</div>
+        } else if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 18 && currentHour < 22) {
+            return <div>{formatTimeLimit(meter["T_MF_6P_10"])}</div>
+        } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
+            return <div>{formatTimeLimit(meter["T_SA_9A_6P"])}</div>
+        } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
+            return <div>{formatTimeLimit(meter["T_SA_6P_10"])}</div>
+        } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
+            return <div>{formatTimeLimit(meter["T_SU_9A_6P"])}</div>
+        } else if (dayOfWeek == 0 && currentHour >= 18 && currentHour < 22) {
+            return <div>{formatTimeLimit(meter["T_SU_6P_10"])}</div>
+        } else {
+            return <div>-</div>
+        }
+    }
 
     return (
         <>
@@ -168,7 +218,7 @@ const Home = (): ReactElement => {
                 <Navbar.Brand href="#home">
                     <img src="logo.png" width={32} />{' '}
                     {/* <FontAwesomeIcon icon={faParking} />{' '} */}
-                    <span>Vancouver</span>
+                    <span className='navbar-title'>Vancouver</span>
                 </Navbar.Brand>
             </Navbar>
             <Container fluid="md" className="uploader-container">
@@ -182,12 +232,6 @@ const Home = (): ReactElement => {
                     </Col>
                 </Row>
             </Container>
-
-            {showAlert &&
-                <div className='AlertBox'>
-                    <Alert variant={'primary'}>{draggedPosition.lat} {draggedPosition.lng}</Alert>
-                </div>
-            }
 
             <div id='google-map'>
                 <LoadScript googleMapsApiKey={"AIzaSyAo_Xg46o9KHuxQVu4yvukI_B9hbvJoqJI"}>
@@ -203,21 +247,25 @@ const Home = (): ReactElement => {
                                     featureType: "poi.business",
                                     stylers: [{ visibility: "off" }]
                                 }
-                            ]
+                            ],
+                            streetViewControl: false,
+                            fullscreenControl: false,
+                            zoomControl: true,
+                            mapTypeControl: true
                         }}
                         mapContainerStyle={{ width: "100%", height: "100%" }}
                     >
                         {clusters.map((cluster: any) => {
                             const [longitude, latitude] = cluster.geometry.coordinates;
                             const { properties } = cluster;
-                            
+
                             if (properties.point_count) {
                                 const { point_count: pointCount } = properties;
                                 return (
                                     <Marker
-                                        key={`cluster-${cluster.id }`}
+                                        key={`cluster-${cluster.id}`}
                                         position={{ lat: latitude, lng: longitude }}
-                                        label={{ text: `${pointCount}`, color: 'black', fontWeight: 'bold'}}
+                                        label={{ text: `${pointCount}`, color: 'black', fontWeight: 'bold' }}
                                         icon={{
                                             path: google.maps.SymbolPath.CIRCLE,
                                             scale: 15,
@@ -225,12 +273,12 @@ const Home = (): ReactElement => {
                                             fillOpacity: 1.0,
                                             strokeWeight: 3,
                                             strokeOpacity: 1.0,
-                                            strokeColor:"#1f304f",
+                                            strokeColor: "#1f304f",
                                         }}
                                     />
                                 );
                             } else {
-                                
+
 
                                 console.log(cluster);
                                 return (
@@ -240,27 +288,42 @@ const Home = (): ReactElement => {
                                         // label={{ text: `C`, color: 'white'}}
                                         icon={{
                                             url: getIconUrl(cluster.properties.meterhead),
-                                            scaledSize: new google.maps.Size(30, 30)
+                                            scaledSize: new google.maps.Size(30, 30),
+                                            strokeWeight: 10,
+                                            strokeOpacity: 1.0,
+                                            strokeColor: "#00ffee",
                                         }}
-                                        onClick={()=> {setClickedMeter(cluster.properties.meterID)}}
+                                        onClick={() => { setClickedMeter(cluster.properties.meterID) }}
                                     >
-                                        {cluster.properties.meterID===clickedMeter && (
+                                        {cluster.properties.meterID === clickedMeter && (
                                             <InfoWindow onCloseClick={() => setClickedMeter("")} position={{ lat: latitude, lng: longitude }}>
                                                 <Container className="info-window-container">
-                                                    <Row className="info-window-rate-container">
-                                                        <Col xs={5}>
+                                                    <Row className="info-window-id-container">
+                                                        {/* <Col xs={6}>
                                                             <span className="info-window-rate">Meter ID</span>
+                                                        </Col> */}
+                                                        <Col xs={6}>
+                                                            <span className="info-window-meter-id">{cluster.properties.meterID}</span>
                                                         </Col>
-                                                        <Col xs={7}>
-                                                            <span className="info-window-value">{cluster.properties.meterID}</span>
-                                                        </Col> 
                                                     </Row>
-                                                    <Row className="info-window-rate-container">
+                                                    <Row className="info-window-title-container">
                                                         <Col xs={5}>
                                                             <span className="info-window-rate">Rate</span>
                                                         </Col>
                                                         <Col xs={7}>
-                                                            <span className="info-window-value">$#### CAD</span>
+                                                            <span className="info-window-rate">Time Limit</span>
+                                                        </Col>
+                                                    </Row>
+                                                    <Row className="info-window-content-container">
+                                                        <Col xs={5}>
+                                                            {/* <span className="info-window-value">$#### Hours</span> */}
+                                                            <span className="info-window-value">{formatRates(cluster.properties.meter)}</span>
+                                                        </Col>
+                                                        <Col xs={7}>
+                                                            {/* <span className="info-window-value">$#### CAD</span> */}
+                                                            <span className="info-window-value">{getTimeLimit(cluster.properties.meter)}</span>
+                                                            <span className="info-window-unit"> hrs</span>
+
                                                         </Col>
                                                     </Row>
                                                 </Container>
