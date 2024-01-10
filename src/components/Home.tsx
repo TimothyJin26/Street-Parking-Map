@@ -86,7 +86,7 @@ const Home = (): ReactElement => {
         for (let meter of meterList) {
             if (meterMap.has(JSON.stringify(meter.geometry))) {
                 let exisitngMeter = meterMap.get(JSON.stringify(meter.geometry));
-                exisitngMeter.properties.meterID = exisitngMeter.properties.meterID + '/' + meter.properties.meterID;
+                exisitngMeter.properties.meterID = exisitngMeter.properties.meterID + ' / ' + meter.properties.meterID;
             } else {
                 meterMap.set(JSON.stringify(meter.geometry), meter);
             }
@@ -196,19 +196,19 @@ const Home = (): ReactElement => {
         const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
         const currentHour: number = today.getHours();
         if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 9 && currentHour < 18) {
-            return <div>{formatTimeLimit(meter["T_MF_9A_6P"])}</div>
+            return formatTimeLimit(meter["T_MF_9A_6P"]);
         } else if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 18 && currentHour < 22) {
-            return <div>{formatTimeLimit(meter["T_MF_6P_10"])}</div>
+            return formatTimeLimit(meter["T_MF_6P_10"]);
         } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
-            return <div>{formatTimeLimit(meter["T_SA_9A_6P"])}</div>
+            return formatTimeLimit(meter["T_SA_9A_6P"]);
         } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
-            return <div>{formatTimeLimit(meter["T_SA_6P_10"])}</div>
+            return formatTimeLimit(meter["T_SA_6P_10"]);
         } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
-            return <div>{formatTimeLimit(meter["T_SU_9A_6P"])}</div>
+            return formatTimeLimit(meter["T_SU_9A_6P"]);
         } else if (dayOfWeek == 0 && currentHour >= 18 && currentHour < 22) {
-            return <div>{formatTimeLimit(meter["T_SU_6P_10"])}</div>
+            return formatTimeLimit(meter["T_SU_6P_10"]);
         } else {
-            return <div>-</div>
+            return '-';
         }
     }
 
@@ -302,28 +302,27 @@ const Home = (): ReactElement => {
                                                         {/* <Col xs={6}>
                                                             <span className="info-window-rate">Meter ID</span>
                                                         </Col> */}
-                                                        <Col xs={6}>
+                                                        <Col xs={12}>
                                                             <span className="info-window-meter-id">{cluster.properties.meterID}</span>
                                                         </Col>
                                                     </Row>
                                                     <Row className="info-window-title-container">
-                                                        <Col xs={5}>
-                                                            <span className="info-window-rate">Rate</span>
+                                                        <Col xs={6}>
+                                                            <span className="info-window-rate">Current Rate</span>
                                                         </Col>
-                                                        <Col xs={7}>
+                                                        <Col xs={6}>
                                                             <span className="info-window-rate">Time Limit</span>
                                                         </Col>
                                                     </Row>
                                                     <Row className="info-window-content-container">
-                                                        <Col xs={5}>
+                                                        <Col xs={6}>
                                                             {/* <span className="info-window-value">$#### Hours</span> */}
                                                             <span className="info-window-value">{formatRates(cluster.properties.meter)}</span>
                                                         </Col>
-                                                        <Col xs={7}>
+                                                        <Col xs={6}>
                                                             {/* <span className="info-window-value">$#### CAD</span> */}
                                                             <span className="info-window-value">{getTimeLimit(cluster.properties.meter)}</span>
-                                                            <span className="info-window-unit"> hrs</span>
-
+                                                            {getTimeLimit(cluster.properties.meter)!=='No Time Limit' && (<span className="info-window-unit"> hrs</span>)}
                                                         </Col>
                                                     </Row>
                                                 </Container>
