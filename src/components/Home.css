@@ -37,6 +37,8 @@
     padding-bottom: 5px;
     padding-top: 5px;
     text-align: left;
+        /* border-bottom: 1px solid #f1f2f2; */
+
 }
 
 .info-window-title-container {
@@ -56,13 +58,13 @@
 
 .info-window-rate {
     font-size: 16px;
-    color: darkblue;
+    color: #005A7F;
     font-weight: 600;
 }
 
 .info-window-value {
     font-size: 22px;
-    color: black;
+    color: #1E3050;
     font-weight: 600;
 }
 
@@ -74,6 +76,12 @@
 
 .info-window-meter-id {
     font-size: 20px;
-    color: #8e8e8e;
+    color: #414656;
     font-weight: 700;
+}
+
+.meter-rate-time-range {
+    font-size: 14px;
+    font-weight: 300;
+    color: #414656;
 }

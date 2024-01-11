@@ -162,6 +162,51 @@ const Home = (): ReactElement => {
         }
     };
 
+    const getRateTimeRange = (meter: any) => {
+        const today: Date = new Date();
+        const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
+        const currentHour: number = today.getHours();
+        if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 9 && currentHour < 18) {
+            if(meter["R_MF_9A_6P"] === meter["R_MF_6P_10"]) {
+                return <div>9am - 10pm</div>
+            } else {
+                 return <div>9am - 6pm</div>
+            }
+        } else if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 18 && currentHour < 22) {
+            if(meter["R_MF_9A_6P"] === meter["R_MF_6P_10"]) {
+                return <div>9am - 10pm</div>
+            } else {
+                 return <div>9am - 6pm</div>
+            }
+        } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
+            if(meter["R_SA_9A_6P"] === meter["R_SA_6P_10"]) {
+                return <div>9am - 10pm</div>
+            } else {
+                 return <div>9am - 6pm</div>
+            }
+        } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
+            if(meter["R_SA_9A_6P"] === meter["R_SA_6P_10"]) {
+                return <div>9am - 10pm</div>
+            } else {
+                 return <div>9am - 6pm</div>
+            }
+        } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
+            if(meter["R_SU_9A_6P"] === meter["R_SU_9A_6P"]) {
+                return <div>9am - 10pm</div>
+            } else {
+                 return <div>9am - 6pm</div>
+            }
+        } else if (dayOfWeek == 0 && currentHour >= 18 && currentHour < 22) {
+            if(meter["R_SU_9A_6P"] === meter["R_SU_9A_6P"]) {
+                return <div>9am - 10pm</div>
+            } else {
+                 return <div>9am - 6pm</div>
+            }        
+        } else {
+            return <div>10pm - 9am</div>
+        }
+    }
+
     const formatRates = (meter: any) => {
         const today: Date = new Date();
         const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
@@ -290,7 +335,7 @@ const Home = (): ReactElement => {
                                             url: getIconUrl(cluster.properties.meterhead),
                                             scaledSize: new google.maps.Size(30, 30),
                                             strokeWeight: 10,
-                                            strokeOpacity: 1.0,
+                                            strokeOpacity: 0.5,
                                             strokeColor: "#00ffee",
                                         }}
                                         onClick={() => { setClickedMeter(cluster.properties.meterID) }}
@@ -317,7 +362,8 @@ const Home = (): ReactElement => {
                                                     <Row className="info-window-content-container">
                                                         <Col xs={6}>
                                                             {/* <span className="info-window-value">$#### Hours</span> */}
-                                                            <span className="info-window-value">{formatRates(cluster.properties.meter)}</span>
+                                                            <div className="info-window-value">{formatRates(cluster.properties.meter)}</div>
+                                                            <div className="meter-rate-time-range">{getRateTimeRange(cluster.properties.meter)}</div>
                                                         </Col>
                                                         <Col xs={6}>
                                                             {/* <span className="info-window-value">$#### CAD</span> */}
