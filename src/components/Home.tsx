@@ -176,7 +176,7 @@ const Home = (): ReactElement => {
             if(meter["R_MF_9A_6P"] === meter["R_MF_6P_10"]) {
                 return <div>9am - 10pm</div>
             } else {
-                 return <div>9am - 6pm</div>
+                 return <div>6pm - 10pm</div>
             }
         } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
             if(meter["R_SA_9A_6P"] === meter["R_SA_6P_10"]) {
@@ -188,7 +188,7 @@ const Home = (): ReactElement => {
             if(meter["R_SA_9A_6P"] === meter["R_SA_6P_10"]) {
                 return <div>9am - 10pm</div>
             } else {
-                 return <div>9am - 6pm</div>
+                 return <div>6pm - 10pm</div>
             }
         } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
             if(meter["R_SU_9A_6P"] === meter["R_SU_9A_6P"]) {
@@ -200,7 +200,7 @@ const Home = (): ReactElement => {
             if(meter["R_SU_9A_6P"] === meter["R_SU_9A_6P"]) {
                 return <div>9am - 10pm</div>
             } else {
-                 return <div>9am - 6pm</div>
+                 return <div>6am - 10pm</div>
             }        
         } else {
             return <div>10pm - 9am</div>
