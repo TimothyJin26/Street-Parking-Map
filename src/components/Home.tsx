@@ -166,6 +166,8 @@ const Home = (): ReactElement => {
         const today: Date = new Date();
         const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
         const currentHour: number = today.getHours();
+        console.log("DATEDATEDATE");
+        console.log(currentHour);
         if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 9 && currentHour < 18) {
             if(meter["R_MF_9A_6P"] === meter["R_MF_6P_10"]) {
                 return <div>9am - 10pm</div>
@@ -178,13 +180,13 @@ const Home = (): ReactElement => {
             } else {
                  return <div>6pm - 10pm</div>
             }
-        } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
+        } else if (dayOfWeek == 6 && currentHour >= 9 && currentHour < 18) {
             if(meter["R_SA_9A_6P"] === meter["R_SA_6P_10"]) {
                 return <div>9am - 10pm</div>
             } else {
                  return <div>9am - 6pm</div>
             }
-        } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
+        } else if (dayOfWeek == 6 && currentHour >= 18 && currentHour < 22) {
             if(meter["R_SA_9A_6P"] === meter["R_SA_6P_10"]) {
                 return <div>9am - 10pm</div>
             } else {
@@ -211,13 +213,16 @@ const Home = (): ReactElement => {
         const today: Date = new Date();
         const dayOfWeek: number = today.getDay(); // 0 = Sunday, 6 = Saturday
         const currentHour: number = today.getHours();
+        console.log("AAAAAAAAAAAAAAAAAA");
+        console.log(dayOfWeek);
+        console.log(currentHour);
         if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 9 && currentHour < 18) {
             return <div>{meter["R_MF_9A_6P"]}</div>
         } else if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 18 && currentHour < 22) {
             return <div>{meter["R_MF_6P_10"]}</div>
-        } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
+        } else if (dayOfWeek == 6 && currentHour >= 9 && currentHour < 18) {
             return <div>{meter["R_SA_9A_6P"]}</div>
-        } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
+        } else if (dayOfWeek == 6 && currentHour >= 18 && currentHour < 22) {
             return <div>{meter["R_SA_6P_10"]}</div>
         } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
             return <div>{meter["R_SU_9A_6P"]}</div>
@@ -244,9 +249,9 @@ const Home = (): ReactElement => {
             return formatTimeLimit(meter["T_MF_9A_6P"]);
         } else if (dayOfWeek >= 1 && dayOfWeek < 6 && currentHour >= 18 && currentHour < 22) {
             return formatTimeLimit(meter["T_MF_6P_10"]);
-        } else if (dayOfWeek == 7 && currentHour >= 9 && currentHour < 18) {
+        } else if (dayOfWeek == 6 && currentHour >= 9 && currentHour < 18) {
             return formatTimeLimit(meter["T_SA_9A_6P"]);
-        } else if (dayOfWeek == 7 && currentHour >= 18 && currentHour < 22) {
+        } else if (dayOfWeek == 6 && currentHour >= 18 && currentHour < 22) {
             return formatTimeLimit(meter["T_SA_6P_10"]);
         } else if (dayOfWeek == 0 && currentHour >= 9 && currentHour < 18) {
             return formatTimeLimit(meter["T_SU_9A_6P"]);
